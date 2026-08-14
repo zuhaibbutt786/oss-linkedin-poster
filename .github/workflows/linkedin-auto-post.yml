@@ -1,0 +1,30 @@
+name: Auto-post OSS project to LinkedIn
+
+on:
+  schedule:
+    # Runs every 3 days at 09:00 UTC (≈ 2 PM PKT)
+    - cron: '0 9 */3 * *'
+  workflow_dispatch:  # Allows manual trigger from Actions tab
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Post to LinkedIn
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # optional, for higher rate limits
+        run: python scripts/auto_post.py
