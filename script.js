@@ -17,11 +17,9 @@ function formatNumber(n) {
 }
 
 function buildQuery() {
-  let q = searchQuery.value.trim() || 'stars:>1000';
+  let q = searchQuery.value.trim() || 'stars:>500';
   const lang = languageSelect.value;
-  if (lang) {
-    q += ` language:${lang}`;
-  }
+  if (lang) q += ` language:${lang}`;
   return q;
 }
 
@@ -35,14 +33,12 @@ async function searchProjects() {
 
   try {
     const res = await fetch(url, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
     });
 
     if (!res.ok) {
       if (res.status === 403) {
-        throw new Error('Rate limit exceeded. Try again later or add a GitHub personal access token (see README).');
+        throw new Error('Rate limit exceeded. Try again later.');
       }
       throw new Error(`GitHub API error: ${res.status}`);
     }
@@ -83,16 +79,14 @@ async function searchProjects() {
 
 function selectRepo(repo) {
   selectedRepo = repo;
-  const text = `🚀 Check out this awesome open-source project: ${repo.full_name}\n\n${repo.description || ''}\n\n⭐ ${formatNumber(repo.stargazers_count)} stars | 💻 ${repo.language || 'N/A'}\n\n${repo.html_url}\n\n#OpenSource #GitHub #OSS #Developer`;
+  const stars = formatNumber(repo.stargazers_count);
+  const text = `This open-source project is quietly changing how people build AI systems.\n\n🚀 ${repo.full_name}\n\n${repo.description || ''}\n\n⭐ ${stars} stars  |  💻 ${repo.language || 'N/A'}\n\n${repo.html_url}\n\n#OpenSource #MachineLearning #AI #DataScience #GenAI #NLP #ComputerVision #BigData #Research`;
   postText.value = text;
   updateShareLink();
   postText.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function updateShareLink() {
-  // LinkedIn official share-offsite only accepts a URL.
-  // We put the repo URL so LinkedIn can pull OG tags.
-  // User can still paste the full text from the textarea.
   if (!selectedRepo) {
     shareLink.href = 'https://www.linkedin.com/sharing/share-offsite/?url=https://github.com';
     return;
@@ -126,6 +120,5 @@ searchQuery.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') searchProjects();
 });
 
-// Initial load
 searchProjects();
 updateShareLink();
