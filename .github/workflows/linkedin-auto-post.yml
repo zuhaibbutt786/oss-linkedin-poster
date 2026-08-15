@@ -2,9 +2,9 @@ name: Auto-post OSS project to LinkedIn
 
 on:
   schedule:
-    # Runs every 3 days at 09:00 UTC (≈ 2 PM PKT)
-    - cron: '0 9 */3 * *'
-  workflow_dispatch:  # Allows manual trigger from Actions tab
+    # Every 2 days at 06:00 UTC = 11:00 AM Pakistan Time (PKT)
+    - cron: '0 6 */2 * *'
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   post:
@@ -26,5 +26,6 @@ jobs:
       - name: Post to LinkedIn
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # optional, for higher rate limits
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/auto_post.py
