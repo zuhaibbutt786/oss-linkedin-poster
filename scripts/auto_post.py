@@ -30,18 +30,29 @@ TOPICS = [
     "research",
 ]
 
-# Prefer relatively recent + high-quality projects
 MIN_STARS = 200
-CREATED_AFTER = (datetime.utcnow() - timedelta(days=365 * 2)).strftime("%Y-%m-%d")  # last ~2 years
+CREATED_AFTER = (datetime.utcnow() - timedelta(days=365 * 2)).strftime("%Y-%m-%d")
+
+# Strong hooks that grab attention
+HOOKS = [
+    "This open-source project is quietly changing how people build AI systems.",
+    "If you work with AI or data, you need to see this repository.",
+    "Most people still don't know about this powerful open-source tool.",
+    "Here's a high-signal open-source project worth your attention.",
+    "This is one of the most practical AI/ML repos I've seen recently.",
+    "Stop scrolling — this open-source project is actually useful.",
+    "A clean, well-maintained open-source project that solves a real problem.",
+    "Developers building in AI should bookmark this.",
+    "This repo is gaining serious traction in the AI community.",
+    "Found a high-quality open-source project that deserves more eyes.",
+]
 
 
 def get_person_urn(access_token: str) -> str:
-    """Get the authenticated member's person URN."""
     headers = {
         "Authorization": f"Bearer {access_token}",
         "X-Restli-Protocol-Version": "2.0.0",
     }
-    # Prefer OpenID userinfo if available
     resp = requests.get(
         "https://api.linkedin.com/v2/userinfo",
         headers=headers,
@@ -53,7 +64,6 @@ def get_person_urn(access_token: str) -> str:
         if sub:
             return f"urn:li:person:{sub}"
 
-    # Fallback to /v2/me
     resp = requests.get(
         "https://api.linkedin.com/v2/me",
         headers=headers,
@@ -68,7 +78,6 @@ def get_person_urn(access_token: str) -> str:
 
 
 def search_github_repos(query: str, token: str | None = None) -> list:
-    """Search GitHub for repositories matching the query."""
     headers = {"Accept": "application/vnd.github.v3+json"}
     if token:
         headers["Authorization"] = f"token {token}"
@@ -85,16 +94,13 @@ def search_github_repos(query: str, token: str | None = None) -> list:
     return resp.json().get("items", [])
 
 
-def pick_project(access_token: str | None = None) -> dict:
-    """Pick one interesting project from the topic list."""
+def pick_project() -> dict:
     topic = random.choice(TOPICS)
-    # Build a good search query
     q = f"{topic} stars:>{MIN_STARS} created:>{CREATED_AFTER}"
     print(f"Searching GitHub for: {q}")
 
     repos = search_github_repos(q, token=os.getenv("GITHUB_TOKEN"))
     if not repos:
-        # Fallback broader search
         q = f"{topic} stars:>{MIN_STARS}"
         print(f"Fallback search: {q}")
         repos = search_github_repos(q, token=os.getenv("GITHUB_TOKEN"))
@@ -102,7 +108,6 @@ def pick_project(access_token: str | None = None) -> dict:
     if not repos:
         raise RuntimeError("No suitable repositories found")
 
-    # Prefer repos that look actively maintained and have a description
     candidates = [
         r for r in repos
         if r.get("description") and not r.get("archived") and r.get("stargazers_count", 0) >= MIN_STARS
@@ -110,41 +115,40 @@ def pick_project(access_token: str | None = None) -> dict:
     if not candidates:
         candidates = repos
 
-    repo = random.choice(candidates[:8])  # pick from top few
+    repo = random.choice(candidates[:8])
     print(f"Selected: {repo['full_name']} ({repo['stargazers_count']} stars)")
     return repo
 
 
 def create_post_text(repo: dict) -> str:
-    """Generate a professional LinkedIn post."""
     name = repo["full_name"]
     desc = (repo.get("description") or "").strip()
     stars = repo.get("stargazers_count", 0)
     lang = repo.get("language") or "N/A"
     url = repo["html_url"]
 
-    # Format large numbers nicely
     if stars >= 1000:
         stars_str = f"{stars/1000:.1f}k"
     else:
         stars_str = str(stars)
 
-    post = f"""🚀 Open-source gem for the AI / Data Science community
+    hook = random.choice(HOOKS)
 
-{name}
+    post = f"""{hook}
+
+🚀 {name}
 
 {desc}
 
-⭐ {stars_str} stars | 💻 {lang}
+⭐ {stars_str} stars  |  💻 {lang}
 
 {url}
 
-#OpenSource #MachineLearning #AI #DataScience #GenAI #NLP #ComputerVision #BigData #IoT #Research"""
+#OpenSource #MachineLearning #AI #DataScience #GenAI #NLP #ComputerVision #BigData #Research"""
     return post.strip()
 
 
 def post_to_linkedin(access_token: str, author_urn: str, commentary: str) -> str:
-    """Create an organic text post on the personal profile."""
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
@@ -176,7 +180,6 @@ def post_to_linkedin(access_token: str, author_urn: str, commentary: str) -> str
         print("LinkedIn API error:", resp.status_code, resp.text)
         resp.raise_for_status()
 
-    # Post ID is returned in the x-restli-id header
     post_id = resp.headers.get("x-restli-id", "unknown")
     print(f"Successfully posted! ID: {post_id}")
     return post_id
