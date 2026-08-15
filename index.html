@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OSS LinkedIn Poster – Discover & Share Open Source Projects</title>
-  <meta name="description" content="Discover trending open-source projects on GitHub and easily share them on LinkedIn.">
+  <title>OSS LinkedIn Poster – Discover & Auto-Post Open Source</title>
+  <meta name="description" content="Discover high-quality open-source projects in AI, ML, Data Science and automatically share them on LinkedIn.">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,63 +13,66 @@
   <header>
     <div class="container">
       <h1>🚀 OSS LinkedIn Poster</h1>
-      <p class="tagline">Discover open-source projects & share them on LinkedIn in one click</p>
+      <p class="tagline">Discover the best open-source projects in AI, ML & Data Science — and post them automatically</p>
     </div>
   </header>
 
   <main class="container">
+    <section class="status-bar">
+      <div class="status-item">
+        <span class="label">Auto-posting</span>
+        <span class="value">Every 3 days</span>
+      </div>
+      <div class="status-item">
+        <span class="label">Topics</span>
+        <span class="value">AI · ML · GenAI · NLP · Vision · IoT · Big Data</span>
+      </div>
+      <div class="status-item">
+        <span class="label">Target</span>
+        <span class="value">Personal LinkedIn Profile</span>
+      </div>
+    </section>
+
     <section class="controls">
       <div class="search-box">
-        <input type="text" id="searchQuery" placeholder="Search OSS projects (e.g. machine learning, react, ai agent)..." value="stars:>1000">
+        <input type="text" id="searchQuery" placeholder="Search projects (e.g. generative ai, llm, computer vision)..." value="stars:>500">
         <select id="language">
           <option value="">Any language</option>
+          <option value="python">Python</option>
           <option value="javascript">JavaScript</option>
           <option value="typescript">TypeScript</option>
-          <option value="python">Python</option>
           <option value="go">Go</option>
           <option value="rust">Rust</option>
           <option value="java">Java</option>
           <option value="c++">C++</option>
-          <option value="php">PHP</option>
-          <option value="ruby">Ruby</option>
-          <option value="swift">Swift</option>
         </select>
         <select id="sortBy">
           <option value="stars">Most stars</option>
           <option value="updated">Recently updated</option>
           <option value="forks">Most forks</option>
         </select>
-        <button id="searchBtn" class="btn primary">Search Projects</button>
+        <button id="searchBtn" class="btn primary">Search</button>
       </div>
-      <p class="hint">Uses GitHub Search API (rate limited without token). For trending-like results try: <code>created:>2026-01-01 stars:>50</code></p>
     </section>
 
     <section id="status" class="status"></section>
-
     <section id="projects" class="projects-grid"></section>
 
     <section class="linkedin-section">
-      <h2>Share on LinkedIn</h2>
-      <p>Select a project above, customize the post text, then open LinkedIn share dialog.</p>
-      <textarea id="postText" rows="5" placeholder="Your LinkedIn post will appear here..."></textarea>
+      <h2>Manual Share</h2>
+      <p>Select any project above to generate a ready-to-post LinkedIn caption, then copy or open the share dialog.</p>
+      <textarea id="postText" rows="6" placeholder="Your LinkedIn post will appear here..."></textarea>
       <div class="share-actions">
         <button id="copyBtn" class="btn secondary">Copy Text</button>
         <a id="shareLink" href="#" target="_blank" rel="noopener" class="btn primary">Open LinkedIn Share</a>
       </div>
-      <p class="note"><strong>Important:</strong> Full automatic posting requires a backend + OAuth (client secret must never be in frontend code). This site uses LinkedIn’s official share URL for safe, user-initiated sharing.</p>
-    </section>
-
-    <section class="info-box">
-      <h3>⚠️ Security Notice about your keys</h3>
-      <p>You shared a LinkedIn Client ID and what appears to be a Client Secret / token in chat. <strong>Immediately regenerate your Client Secret</strong> in the <a href="https://www.linkedin.com/developers/apps" target="_blank">LinkedIn Developer Portal</a> because it is now public.</p>
-      <p>Never put Client Secret or Access Tokens in a public GitHub Pages site or any client-side JavaScript. For true automation use GitHub Actions + repository secrets, or a serverless function (Vercel / Netlify / Cloudflare Workers).</p>
     </section>
   </main>
 
   <footer>
     <div class="container">
-      <p>Built for discovering & promoting open source • Hosted on GitHub Pages</p>
-      <p><a href="https://github.com/zuhaibbutt786/oss-linkedin-poster" target="_blank">View source on GitHub</a></p>
+      <p>Auto-posts high-quality open-source projects every 3 days • Built with GitHub Actions</p>
+      <p><a href="https://github.com/zuhaibbutt786/oss-linkedin-poster" target="_blank">View source</a></p>
     </div>
   </footer>
 
