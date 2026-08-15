@@ -11,8 +11,11 @@ from datetime import datetime, timedelta
 
 import requests
 
+
+
+
 # ---------- Config ----------
-LINKEDIN_VERSION = "202504"  # YYYYMM format – update if needed
+LINKEDIN_VERSION = "202405"  # YYYYMM format – update if needed
 TOPICS = [
     "machine learning",
     "deep learning",
