@@ -5,7 +5,8 @@
     "electric-sql/pglite",
     "firecrawl/pdf-inspector",
     "gofr-dev/gofr",
+    "simstudioai/sim",
     "stanford-oval/storm"
   ],
-  "updated_at": "2026-08-25T06:39:16.601775Z"
+  "updated_at": "2026-08-27T17:16:22.127769Z"
 }
