@@ -2,8 +2,8 @@
 """
 Once-a-week AI/ML PDF tutorial post for LinkedIn (personal profile).
 
-Dense carousel pages: steps, code hacks, methods, simple graphics.
-Header + footer on every page. Footer: Day N of 100 | #LearnWithZuhaib
+Dense carousel pages: steps, code hacks, methods — no large empty gaps.
+Header + footer every page. Footer: Day N of 100 | #LearnWithZuhaib
 """
 
 from __future__ import annotations
@@ -43,6 +43,7 @@ CODE_GREEN = HexColor("#4ADE80")
 CODE_YELLOW = HexColor("#FDE047")
 GREEN = HexColor("#16A34A")
 ORANGE = HexColor("#EA580C")
+PURPLE = HexColor("#7C3AED")
 
 TOPICS = [
     "Generative AI fundamentals",
@@ -163,10 +164,11 @@ Return ONLY valid JSON (no markdown fences) with this shape:
     {{
       "type": "steps|code|method|tips",
       "heading": "short heading under 36 chars",
-      "steps": ["Step 1 action...", "Step 2 action...", "Step 3 action...", "Step 4 action..."],
-      "code": "optional 2-4 line python snippet or empty string",
-      "hack": "one practical pro tip / hack",
-      "why": "one line why this works"
+      "steps": ["action 1", "action 2", "action 3", "action 4", "action 5"],
+      "code": "2-5 line python snippet or empty string",
+      "hack": "one practical pro tip",
+      "why": "one line why this works",
+      "extra": ["bonus tip A", "bonus tip B"]
     }}
   ],
   "takeaway": "memorable closing line",
@@ -175,11 +177,11 @@ Return ONLY valid JSON (no markdown fences) with this shape:
 
 Rules:
 - Exactly 6 slides
-- Mix types: at least 2 steps, 2 code, 1 method, 1 tips
-- steps: 3-4 concrete actions, topic-specific
-- code: real short Python/HF/API style snippets when type is code (use \\n for newlines)
-- No fluff, no generic advice, no markdown inside strings
-- Focus on methods, how-to, hacks"""
+- Each slide MUST have 4-5 steps (fill the page)
+- At least 2 slides with non-empty code
+- extra: 2 short bonus tips per slide
+- Topic-specific, no fluff, no markdown inside strings
+- code uses \\n for newlines"""
 
     try:
         resp = requests.post(
@@ -195,7 +197,7 @@ Rules:
                     {"role": "user", "content": prompt},
                 ],
                 "temperature": 0.65,
-                "max_tokens": 2800,
+                "max_tokens": 3200,
             },
             timeout=50,
         )
@@ -230,23 +232,28 @@ def fallback_tutorial(topic: str) -> dict:
                     "Define the success metric before any model work",
                     "Collect a small labeled slice you can evaluate by hand",
                     "Run a dead-simple baseline and log the score",
+                    "Write down known failure cases up front",
                     "Only then add complexity if the metric demands it",
                 ],
                 "code": "",
                 "hack": "If you cannot measure it in 10 minutes, the metric is wrong.",
                 "why": "Baselines stop you from celebrating noise.",
+                "extra": ["Keep a living scoreboard in the repo README", "Revisit the metric when users change"],
             },
             {
                 "type": "code",
                 "heading": "Minimal eval loop",
                 "steps": [
-                    "Load predictions and labels",
-                    "Compute one primary metric",
+                    "Load predictions and labels from one file",
+                    "Compute one primary metric only",
                     "Print failures, not only averages",
+                    "Save a CSV of the worst 20 cases",
+                    "Block merge if metric drops vs baseline",
                 ],
-                "code": "from sklearn.metrics import f1_score\ny_true, y_pred = labels, preds\nprint('f1', f1_score(y_true, y_pred, average='macro'))",
+                "code": "from sklearn.metrics import f1_score\ny_true, y_pred = labels, preds\nprint('f1', f1_score(y_true, y_pred, average='macro'))\n# also print 5 misclassified samples",
                 "hack": "Always print 5 failure cases next to the metric.",
                 "why": "Averages hide the bugs users will feel.",
+                "extra": ["Track metric by slice (lang, length, class)", "Fail CI on silent metric regression"],
             },
             {
                 "type": "method",
@@ -256,22 +263,27 @@ def fallback_tutorial(topic: str) -> dict:
                     "Log input hash, model version, latency",
                     "Add a kill switch / rollback path",
                     "Alert on metric drift weekly",
+                    "Document the on-call owner in the README",
                 ],
                 "code": "",
                 "hack": "Ship behind a feature flag on day one.",
                 "why": "Most ML incidents are deploy incidents.",
+                "extra": ["Canary 5% traffic before full rollout", "Keep last-good model artifact pinned"],
             },
             {
                 "type": "code",
                 "heading": "HF quickstart hack",
                 "steps": [
-                    "Pin model revision",
+                    "Pin model revision for reproducibility",
                     "Use pipeline for the first prototype",
-                    "Move to batched tensors when latency hurts",
+                    "Batch inputs when latency becomes an issue",
+                    "Cache tokenizer outputs where possible",
+                    "Move hot paths to a dedicated inference service",
                 ],
                 "code": "from transformers import pipeline\nclf = pipeline('text-classification', model='model-id', revision='main')\nprint(clf('example input')[0])",
                 "hack": "Pin revision= so deploys are reproducible.",
                 "why": "Silent model updates break prod quietly.",
+                "extra": ["Store model id + revision in config", "Smoke-test the pipeline in CI"],
             },
             {
                 "type": "tips",
@@ -281,10 +293,12 @@ def fallback_tutorial(topic: str) -> dict:
                     "Prefer smaller models until quality plateaus",
                     "Write the eval set before the training script",
                     "Document known failure modes in the README",
+                    "Time-box experiments to one clear question",
                 ],
                 "code": "",
                 "hack": "One golden test case > ten vague unit tests.",
                 "why": "Speed comes from fewer surprises, not more GPUs.",
+                "extra": ["Delete unused notebooks monthly", "Name experiments by hypothesis, not date"],
             },
             {
                 "type": "steps",
@@ -294,10 +308,12 @@ def fallback_tutorial(topic: str) -> dict:
                     "Latency budget measured on real hardware",
                     "Logging and rollback ready",
                     "Owner named for the first week on-call",
+                    "User-facing failure message defined",
                 ],
                 "code": "",
                 "hack": "No owner = no production system.",
                 "why": "Process is part of the model.",
+                "extra": ["Screenshot the first successful prod call", "Schedule a 7-day post-ship review"],
             },
         ],
         "takeaway": "Methods beat motivation. Measure, baseline, ship small, iterate.",
@@ -341,17 +357,17 @@ def _draw_header_footer(
     day_number: int,
     page_label: str,
 ) -> None:
-    header_h = 32
-    footer_h = 30
+    header_h = 28
+    footer_h = 26
 
     c.setFillColor(NAVY)
     c.rect(0, height - header_h, width, header_h, fill=1, stroke=0)
     c.setFillColor(GOLD)
     c.setFont("Helvetica-Bold", 9)
-    c.drawString(22, height - 20, "AI / ML HOW-TO TUTORIAL")
+    c.drawString(18, height - 18, "AI / ML HOW-TO TUTORIAL")
     c.setFillColor(HexColor("#94A3B8"))
     c.setFont("Helvetica", 9)
-    c.drawRightString(width - 22, height - 20, page_label)
+    c.drawRightString(width - 18, height - 18, page_label)
 
     c.setFillColor(NAVY)
     c.rect(0, 0, width, footer_h, fill=1, stroke=0)
@@ -359,14 +375,14 @@ def _draw_header_footer(
     c.setLineWidth(2)
     c.line(0, footer_h, width, footer_h)
     c.setFillColor(GOLD)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(22, 10, f"Day {day_number} of {SERIES_TOTAL}")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(18, 9, f"Day {day_number} of {SERIES_TOTAL}")
     c.setFillColor(HexColor("#94A3B8"))
     c.setFont("Helvetica", 8)
-    c.drawCentredString(width / 2, 10, "Steps · Code · Methods · Hacks")
+    c.drawCentredString(width / 2, 9, "Steps · Code · Methods · Hacks")
     c.setFillColor(GOLD)
     c.setFont("Helvetica-Bold", 8)
-    c.drawRightString(width - 22, 10, BRAND_TAG)
+    c.drawRightString(width - 18, 9, BRAND_TAG)
 
 
 def _draw_code_box(
@@ -375,42 +391,39 @@ def _draw_code_box(
     y_top: float,
     w: float,
     code: str,
-    max_lines: int = 5,
+    max_lines: int = 6,
 ) -> float:
-    """Draw a dark code panel. Returns y at bottom of box."""
     lines = [ln for ln in (code or "").replace("\\n", "\n").split("\n") if ln.strip()]
     lines = lines[:max_lines]
     if not lines:
         return y_top
 
-    line_h = 13
-    pad = 10
-    box_h = pad * 2 + line_h * len(lines) + 14
+    line_h = 12
+    pad_top = 18
+    pad_bot = 8
+    box_h = pad_top + pad_bot + line_h * len(lines)
     y_bot = y_top - box_h
 
     c.setFillColor(CODE_BG)
-    c.roundRect(x, y_bot, w, box_h, 6, fill=1, stroke=0)
+    c.roundRect(x, y_bot, w, box_h, 5, fill=1, stroke=0)
 
-    # traffic dots
     for i, col in enumerate([HexColor("#FF5F56"), HexColor("#FFBD2E"), HexColor("#27C93F")]):
         c.setFillColor(col)
-        c.circle(x + 12 + i * 12, y_top - 10, 3, fill=1, stroke=0)
+        c.circle(x + 10 + i * 11, y_top - 8, 2.5, fill=1, stroke=0)
 
     c.setFillColor(HexColor("#64748B"))
     c.setFont("Helvetica", 7)
-    c.drawRightString(x + w - 8, y_top - 12, "code")
+    c.drawRightString(x + w - 6, y_top - 10, "code")
 
-    ty = y_top - 26
+    ty = y_top - 22
     for ln in lines:
-        # crude highlight: comments / strings
         c.setFillColor(CODE_GREEN if ln.strip().startswith("#") else CODE_FG)
         if "print" in ln or "return" in ln:
             c.setFillColor(CODE_YELLOW)
-        c.setFont("Courier", 9)
-        # clip long lines
-        while c.stringWidth(ln, "Courier", 9) > w - 20 and len(ln) > 3:
+        c.setFont("Courier", 8.5)
+        while c.stringWidth(ln, "Courier", 8.5) > w - 16 and len(ln) > 3:
             ln = ln[:-1]
-        c.drawString(x + 10, ty, ln)
+        c.drawString(x + 8, ty, ln)
         ty -= line_h
 
     return y_bot
@@ -420,66 +433,88 @@ def _draw_cover(c: canvas.Canvas, width: float, height: float, content: dict, da
     c.setFillColor(NAVY)
     c.rect(0, 0, width, height, fill=1, stroke=0)
     c.setFillColor(GOLD)
-    c.rect(0, height - 6, width, 6, fill=1, stroke=0)
-
-    # Decorative side bar
+    c.rect(0, height - 5, width, 5, fill=1, stroke=0)
     c.setFillColor(NAVY_SOFT)
-    c.rect(0, 0, 18, height, fill=1, stroke=0)
+    c.rect(0, 0, 14, height, fill=1, stroke=0)
     c.setFillColor(GOLD)
-    c.rect(18, 0, 4, height, fill=1, stroke=0)
+    c.rect(14, 0, 3, height, fill=1, stroke=0)
 
     badge = f"Day {day_number} of {SERIES_TOTAL}"
     c.setStrokeColor(GOLD)
     c.setLineWidth(1.5)
-    bw = c.stringWidth(badge, "Helvetica-Bold", 11) + 24
-    bx = 50
-    by = height - 70
-    c.roundRect(bx, by, bw, 24, 4, stroke=1, fill=0)
+    bw = c.stringWidth(badge, "Helvetica-Bold", 10) + 20
+    c.roundRect(40, height - 55, bw, 20, 3, stroke=1, fill=0)
     c.setFillColor(GOLD)
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(bx + 12, by + 7, badge)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(50, height - 49, badge)
 
-    # Type chips
-    _draw_icon_chip(c, 50, height - 110, "STEPS", BLUE)
-    _draw_icon_chip(c, 112, height - 110, "CODE", GREEN)
-    _draw_icon_chip(c, 174, height - 110, "HACKS", ORANGE)
-    _draw_icon_chip(c, 236, height - 110, "METHOD", HexColor("#7C3AED"))
+    _draw_icon_chip(c, 40, height - 88, "STEPS", BLUE)
+    _draw_icon_chip(c, 100, height - 88, "CODE", GREEN)
+    _draw_icon_chip(c, 160, height - 88, "HACKS", ORANGE)
+    _draw_icon_chip(c, 220, height - 88, "METHOD", PURPLE)
 
     title = content.get("title") or "AI / ML How-To"
     c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 30)
-    y = height - 170
-    for line in _wrap_text(c, title, "Helvetica-Bold", 30, width - 100):
-        c.drawString(50, y, line)
-        y -= 36
+    c.setFont("Helvetica-Bold", 26)
+    y = height - 130
+    for line in _wrap_text(c, title, "Helvetica-Bold", 26, width - 90):
+        c.drawString(40, y, line)
+        y -= 30
 
     c.setStrokeColor(GOLD)
     c.setLineWidth(3)
-    c.line(50, y - 4, 130, y - 4)
+    c.line(40, y - 2, 110, y - 2)
 
     sub = content.get("subtitle") or content.get("hook") or ""
     c.setFillColor(HexColor("#CBD5E1"))
-    c.setFont("Helvetica", 13)
-    y -= 28
-    for line in _wrap_text(c, sub, "Helvetica", 13, width - 110):
-        c.drawString(50, y, line)
-        y -= 18
+    c.setFont("Helvetica", 12)
+    y -= 22
+    for line in _wrap_text(c, sub, "Helvetica", 12, width - 90):
+        c.drawString(40, y, line)
+        y -= 16
 
-    # Bottom strip
+    # Fill lower half with "What you get" cards — kills empty navy space
+    y -= 16
+    cards = [
+        ("01", "Steps", "Clear actions you can run today"),
+        ("02", "Code", "Copy-paste snippets that work"),
+        ("03", "Hacks", "Shortcuts from real production"),
+        ("04", "Methods", "Repeatable shipping process"),
+    ]
+    card_w = (width - 40 - 40 - 18) / 2
+    card_h = 52
+    gap = 10
+    for i, (num, label, desc) in enumerate(cards):
+        col = i % 2
+        row = i // 2
+        cx = 40 + col * (card_w + gap)
+        cy = y - row * (card_h + gap) - card_h
+        c.setFillColor(NAVY_SOFT)
+        c.roundRect(cx, cy, card_w, card_h, 6, fill=1, stroke=0)
+        c.setFillColor(GOLD)
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(cx + 12, cy + 30, num)
+        c.setFillColor(white)
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(cx + 40, cy + 30, label)
+        c.setFillColor(HexColor("#94A3B8"))
+        c.setFont("Helvetica", 9)
+        c.drawString(cx + 12, cy + 12, desc)
+
     c.setFillColor(NAVY_SOFT)
-    c.rect(0, 0, width, 44, fill=1, stroke=0)
+    c.rect(0, 0, width, 36, fill=1, stroke=0)
     c.setStrokeColor(GOLD)
     c.setLineWidth(2)
-    c.line(0, 44, width, 44)
+    c.line(0, 36, width, 36)
     c.setFillColor(GOLD)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(28, 18, f"Day {day_number} of {SERIES_TOTAL}")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22, 14, f"Day {day_number} of {SERIES_TOTAL}")
     c.setFillColor(HexColor("#94A3B8"))
-    c.setFont("Helvetica", 9)
-    c.drawCentredString(width / 2, 18, "Swipe → step-by-step · code · methods")
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(width / 2, 14, "Swipe → step-by-step · code · methods")
     c.setFillColor(GOLD)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawRightString(width - 28, 18, BRAND_TAG)
+    c.setFont("Helvetica-Bold", 8)
+    c.drawRightString(width - 22, 14, BRAND_TAG)
 
 
 def _draw_content_page(
@@ -491,157 +526,182 @@ def _draw_content_page(
     total: int,
     day_number: int,
 ) -> None:
+    """Flow layout: pack everything from the top — no floating empty middle."""
     c.setFillColor(LIGHT_BG)
     c.rect(0, 0, width, height, fill=1, stroke=0)
     _draw_header_footer(c, width, height, day_number, f"{index}/{total}")
 
-    margin = 22
-    top = height - 48
-    bottom = 40
+    margin = 16
+    top = height - 36
+    bottom = 32
+    usable_h = top - bottom - 6
 
-    # Full-bleed content panel (minimal empty space)
+    # White panel fills full usable area
     c.setFillColor(CARD_BG)
-    c.roundRect(margin, bottom, width - 2 * margin, top - bottom - 8, 8, fill=1, stroke=0)
+    c.roundRect(margin, bottom, width - 2 * margin, usable_h, 6, fill=1, stroke=0)
 
-    # Left accent
     stype = (slide.get("type") or "steps").lower()
-    accent = {"code": GREEN, "method": HexColor("#7C3AED"), "tips": ORANGE}.get(stype, BLUE)
+    accent = {"code": GREEN, "method": PURPLE, "tips": ORANGE}.get(stype, BLUE)
     c.setFillColor(accent)
-    c.rect(margin, bottom, 6, top - bottom - 8, fill=1, stroke=0)
+    c.rect(margin, bottom, 5, usable_h, fill=1, stroke=0)
 
-    # Number + heading row
+    # Header row
     c.setFillColor(accent)
-    c.circle(margin + 28, top - 28, 14, fill=1, stroke=0)
+    c.circle(margin + 22, top - 20, 11, fill=1, stroke=0)
     c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawCentredString(margin + 28, top - 32, str(index))
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(margin + 22, top - 23, str(index))
 
     heading = slide.get("heading") or f"Step {index}"
     c.setFillColor(SLATE)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(margin + 50, top - 34, heading[:48])
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin + 40, top - 24, heading[:50])
+    _draw_icon_chip(c, width - margin - 62, top - 28, stype.upper()[:6], accent)
 
-    _draw_icon_chip(c, width - margin - 70, top - 38, stype.upper()[:6], accent)
+    y = top - 42
+    inner_x = margin + 12
+    inner_w = width - 2 * margin - 22
 
-    y = top - 58
-    inner_x = margin + 16
-    inner_w = width - 2 * margin - 28
-
-    # Steps dense list
-    steps = slide.get("steps") or slide.get("bullets") or []
-    for n, step in enumerate(steps[:5], start=1):
-        c.setFillColor(HexColor("#F1F5F9"))
-        row_h = 28
-        # measure wrap
-        lines = _wrap_text(c, step, "Helvetica", 10, inner_w - 40)
-        row_h = max(26, 12 + 12 * len(lines))
-        c.roundRect(inner_x, y - row_h + 8, inner_w, row_h, 4, fill=1, stroke=0)
-        c.setFillColor(accent)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(inner_x + 8, y - 6, f"{n}.")
-        c.setFillColor(SLATE)
-        c.setFont("Helvetica", 10)
-        ty = y - 6
-        for ln in lines:
-            c.drawString(inner_x + 28, ty, ln)
-            ty -= 12
-        y -= row_h + 4
-
-    # Code block if present
+    steps = list(slide.get("steps") or slide.get("bullets") or [])[:5]
+    extra = list(slide.get("extra") or [])[:2]
     code = (slide.get("code") or "").strip()
-    if code and y > bottom + 70:
-        y -= 4
-        y = _draw_code_box(c, inner_x, y, inner_w, code, max_lines=4) - 6
-
-    # Hack + why strip at bottom of card
     hack = (slide.get("hack") or "").strip()
     why = (slide.get("why") or slide.get("insight") or "").strip()
-    if (hack or why) and y > bottom + 36:
-        strip_h = 36 if (hack and why) else 22
-        c.setFillColor(HexColor("#EEF2FF"))
-        c.roundRect(inner_x, bottom + 10, inner_w, strip_h + 4, 4, fill=1, stroke=0)
-        c.setFillColor(HexColor("#3730A3"))
+
+    # Pre-measure approximate heights so we can size step rows to fill space
+    n_steps = max(len(steps), 1)
+    code_lines = [ln for ln in code.replace("\\n", "\n").split("\n") if ln.strip()][:5] if code else []
+    code_h = (18 + 8 + 12 * len(code_lines)) if code_lines else 0
+    hack_h = 34 if (hack or why) else 0
+    extra_h = 22 if extra else 0
+    gaps = 4 * (n_steps + 2)
+    remaining = y - bottom - 10 - code_h - hack_h - extra_h - gaps
+    row_h = max(22, min(36, remaining / n_steps))
+
+    for n, step in enumerate(steps, start=1):
+        c.setFillColor(HexColor("#F1F5F9"))
+        c.roundRect(inner_x, y - row_h + 4, inner_w, row_h - 2, 3, fill=1, stroke=0)
+        c.setFillColor(accent)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(inner_x + 6, y - 12, f"{n}.")
+        c.setFillColor(SLATE)
+        c.setFont("Helvetica", 10)
+        lines = _wrap_text(c, step, "Helvetica", 10, inner_w - 36)
+        ty = y - 12
+        for ln in lines[:2]:
+            c.drawString(inner_x + 24, ty, ln)
+            ty -= 11
+        y -= row_h
+
+    if code_lines:
+        y -= 2
+        y = _draw_code_box(c, inner_x, y, inner_w, code, max_lines=5) - 4
+
+    if extra:
+        c.setFillColor(HexColor("#ECFDF5"))
+        eh = 18 + 12 * len(extra)
+        c.roundRect(inner_x, y - eh, inner_w, eh, 3, fill=1, stroke=0)
+        c.setFillColor(GREEN)
         c.setFont("Helvetica-Bold", 8)
-        label_y = bottom + 10 + strip_h - 6
+        c.drawString(inner_x + 8, y - 12, "BONUS")
+        c.setFillColor(SLATE)
+        c.setFont("Helvetica", 9)
+        ty = y - 12
+        for tip in extra:
+            c.drawString(inner_x + 48, ty, f"• {tip}"[:90])
+            ty -= 12
+        y -= eh + 3
+
+    # HACK / WHY directly under content (not pinned to bottom)
+    if hack or why:
+        c.setFillColor(HexColor("#EEF2FF"))
+        strip_h = 32 if (hack and why) else 18
+        c.roundRect(inner_x, y - strip_h - 2, inner_w, strip_h, 3, fill=1, stroke=0)
+        ty = y - 12
         if hack:
-            c.drawString(inner_x + 8, label_y, "HACK")
-            c.setFont("Helvetica", 9)
-            c.setFillColor(SLATE)
-            for ln in _wrap_text(c, hack, "Helvetica", 9, inner_w - 50)[:1]:
-                c.drawString(inner_x + 42, label_y, ln)
-            label_y -= 14
-        if why:
-            c.setFillColor(HexColor("#3730A3"))
+            c.setFillColor(PURPLE)
             c.setFont("Helvetica-Bold", 8)
-            c.drawString(inner_x + 8, label_y, "WHY")
-            c.setFont("Helvetica", 9)
+            c.drawString(inner_x + 8, ty, "HACK")
             c.setFillColor(SLATE)
-            for ln in _wrap_text(c, why, "Helvetica", 9, inner_w - 50)[:1]:
-                c.drawString(inner_x + 42, label_y, ln)
+            c.setFont("Helvetica", 9)
+            c.drawString(inner_x + 40, ty, hack[:95])
+            ty -= 13
+        if why:
+            c.setFillColor(PURPLE)
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(inner_x + 8, ty, "WHY")
+            c.setFillColor(SLATE)
+            c.setFont("Helvetica", 9)
+            c.drawString(inner_x + 40, ty, why[:95])
 
 
 def _draw_closing(c: canvas.Canvas, width: float, height: float, content: dict, day_number: int) -> None:
     c.setFillColor(NAVY)
     c.rect(0, 0, width, height, fill=1, stroke=0)
     c.setFillColor(GOLD)
-    c.rect(0, height - 6, width, 6, fill=1, stroke=0)
+    c.rect(0, height - 5, width, 5, fill=1, stroke=0)
     c.setFillColor(GOLD)
-    c.rect(0, 0, 8, height, fill=1, stroke=0)
+    c.rect(0, 0, 6, height, fill=1, stroke=0)
 
     c.setFillColor(GOLD)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(40, height - 70, "KEY TAKEAWAY")
+    c.drawString(32, height - 50, "KEY TAKEAWAY")
 
     takeaway = content.get("takeaway") or "Methods beat motivation."
     c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 18)
-    y = height - 110
-    for line in _wrap_text(c, takeaway, "Helvetica-Bold", 18, width - 90):
-        c.drawString(40, y, line)
-        y -= 24
+    c.setFont("Helvetica-Bold", 16)
+    y = height - 80
+    for line in _wrap_text(c, takeaway, "Helvetica-Bold", 16, width - 70):
+        c.drawString(32, y, line)
+        y -= 20
 
-    # Mini checklist graphic
-    y -= 20
-    c.setFillColor(NAVY_SOFT)
-    c.roundRect(40, y - 100, width - 80, 110, 8, fill=1, stroke=0)
+    y -= 8
     checks = [
         "Measure before you model",
         "Baseline before you scale",
         "Log before you celebrate",
         "Rollback before you ship",
+        "Name an owner before go-live",
+        "Review after 7 days in prod",
     ]
-    cy = y - 18
-    for item in checks:
+    # 2-column checklist fills space
+    col_w = (width - 64 - 12) / 2
+    for i, item in enumerate(checks):
+        col = i % 2
+        row = i // 2
+        cx = 32 + col * (col_w + 12)
+        cy = y - row * 36 - 28
+        c.setFillColor(NAVY_SOFT)
+        c.roundRect(cx, cy, col_w, 30, 4, fill=1, stroke=0)
         c.setFillColor(GREEN)
-        c.circle(58, cy + 3, 6, fill=1, stroke=0)
+        c.circle(cx + 14, cy + 15, 7, fill=1, stroke=0)
         c.setFillColor(white)
         c.setFont("Helvetica-Bold", 9)
-        c.drawCentredString(58, cy, "✓")
+        c.drawCentredString(cx + 14, cy + 12, "✓")
         c.setFillColor(HexColor("#E2E8F0"))
-        c.setFont("Helvetica", 11)
-        c.drawString(74, cy, item)
-        cy -= 22
+        c.setFont("Helvetica", 10)
+        c.drawString(cx + 28, cy + 11, item)
 
     tags = content.get("hashtags") or []
     tag_str = "  ".join(f"#{t.lstrip('#')}" for t in tags[:8])
     c.setFillColor(HexColor("#94A3B8"))
-    c.setFont("Helvetica", 10)
-    c.drawString(40, 70, tag_str[:90])
+    c.setFont("Helvetica", 9)
+    c.drawString(32, 52, tag_str[:100])
 
     c.setFillColor(NAVY_SOFT)
-    c.rect(0, 0, width, 40, fill=1, stroke=0)
+    c.rect(0, 0, width, 34, fill=1, stroke=0)
     c.setStrokeColor(GOLD)
     c.setLineWidth(2)
-    c.line(0, 40, width, 40)
+    c.line(0, 34, width, 34)
     c.setFillColor(GOLD)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(28, 16, f"Day {day_number} of {SERIES_TOTAL}")
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(22, 13, f"Day {day_number} of {SERIES_TOTAL}")
     c.setFillColor(HexColor("#94A3B8"))
-    c.setFont("Helvetica", 9)
-    c.drawCentredString(width / 2, 16, "Save · Share · Ship")
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(width / 2, 13, "Save · Share · Ship")
     c.setFillColor(GOLD)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawRightString(width - 28, 16, BRAND_TAG)
+    c.setFont("Helvetica-Bold", 8)
+    c.drawRightString(width - 22, 13, BRAND_TAG)
 
 
 def build_pdf(content: dict, day_number: int) -> bytes:
