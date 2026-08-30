@@ -1,8 +1,9 @@
 {
-  "last_posted_at": "2026-08-30T19:05:03.128318+00:00",
+  "last_posted_at": "2026-08-30T19:17:07.579846+00:00",
   "posted_topics": [
-    "Computer vision for practitioners"
+    "Computer vision for practitioners",
+    "LLMs in production"
   ],
-  "last_topic": "Computer vision for practitioners",
-  "day_number": 1
+  "last_topic": "LLMs in production",
+  "day_number": 2
 }
