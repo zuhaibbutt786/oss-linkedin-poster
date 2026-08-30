@@ -1,8 +1,9 @@
 {
-  "last_posted_at": "2026-08-30T19:39:25.702135+00:00",
+  "last_posted_at": "2026-08-30T19:45:28.297455+00:00",
   "posted_topics": [
-    "Tokenization tricks models hide from you"
+    "Tokenization tricks models hide from you",
+    "Vision transformer patch size hacks"
   ],
-  "last_topic": "Tokenization tricks models hide from you",
-  "day_number": 1
+  "last_topic": "Vision transformer patch size hacks",
+  "day_number": 2
 }
