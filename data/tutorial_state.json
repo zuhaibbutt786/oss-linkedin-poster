@@ -1,9 +1,10 @@
 {
-  "last_posted_at": "2026-08-30T19:17:07.579846+00:00",
+  "last_posted_at": "2026-08-30T19:25:25.430839+00:00",
   "posted_topics": [
     "Computer vision for practitioners",
-    "LLMs in production"
+    "LLMs in production",
+    "Generative AI fundamentals"
   ],
-  "last_topic": "LLMs in production",
-  "day_number": 2
+  "last_topic": "Generative AI fundamentals",
+  "day_number": 3
 }
