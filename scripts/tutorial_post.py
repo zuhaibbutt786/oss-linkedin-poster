@@ -45,28 +45,45 @@ GREEN = HexColor("#16A34A")
 ORANGE = HexColor("#EA580C")
 PURPLE = HexColor("#7C3AED")
 
+# Coding-first angles — insider, not textbook chapter titles
 TOPICS = [
-    "Generative AI fundamentals",
-    "Classical machine learning algorithms",
-    "LLMs in production",
-    "MLOps best practices",
-    "Hugging Face models and pipelines",
-    "Speech and audio AI models",
-    "Computer vision for practitioners",
-    "NLP techniques that still matter",
-    "Robotics and embodied AI basics",
-    "IoT + edge AI",
-    "RAG systems explained simply",
-    "Fine-tuning vs prompt engineering",
-    "Evaluating LLM quality",
-    "Vector databases for AI apps",
-    "Safety and guardrails for GenAI",
-    "Deploying models with FastAPI",
-    "Feature stores and training pipelines",
-    "Multimodal AI (vision + language)",
-    "Time series forecasting with ML",
-    "Reinforcement learning intuition",
+    "KV cache and why your LLM is slow",
+    "Tokenization tricks models hide from you",
+    "Quantization INT8 INT4 without breaking quality",
+    "LoRA vs QLoRA vs full fine-tune tradeoffs",
+    "RAG chunking strategies that actually retrieve",
+    "Embedding model choice nobody explains",
+    "Attention masks and causal bugs in code",
+    "FlashAttention and memory bandwidth reality",
+    "vLLM continuous batching internals",
+    "Speculative decoding for faster inference",
+    "Prompt caching and prefix reuse in APIs",
+    "Tool calling JSON schema failure modes",
+    "Structured output with constrained decoding",
+    "Eval harnesses beyond BLEU and accuracy",
+    "Data leakage in LLM benchmarks",
+    "Synthetic data pipelines that do not collapse",
+    "Gradient checkpointing and VRAM math",
+    "Mixed precision fp16 bf16 loss spikes",
+    "Distributed training NCCL gotchas",
+    "ONNX TensorRT export silent accuracy drops",
+    "Vision transformer patch size hacks",
+    "CLIP style contrastive training tricks",
+    "Whisper decoding temperature and timestamps",
+    "Vector DB HNSW vs IVF when to switch",
+    "Hybrid search BM25 plus dense rerank",
+    "Agent memory short-term vs long-term design",
+    "Guardrails that fail under adversarial prompts",
+    "Streaming tokens and partial JSON parsing",
+    "Cost control tokens per request budgets",
+    "Reproducible seeds across CUDA and dataloaders",
 ]
+
+SYSTEM_PROMPT = """You are a senior AI engineer writing for builders who already know the basics.
+You never write textbook fluff. You write coding-side secrets, sharp methods, and copy-pasteable Python.
+You prefer: real APIs (transformers, torch, vllm, fastapi, numpy), real failure modes, real metrics.
+You avoid: vague motivation, corporate buzzwords, "leverage AI", empty frameworks.
+Reply with valid JSON only. No markdown fences."""
 
 
 def utcnow() -> datetime:
@@ -146,42 +163,52 @@ def pick_topic(state: dict) -> str:
     return random.choice(pool)
 
 
+def build_content_prompt(topic: str) -> str:
+    return f"""Write a LinkedIn PDF carousel every serious AI/ML coder should want to save.
+
+TOPIC: {topic}
+
+Goal: coding-side insights most people miss — not intro theory. Think:
+- what breaks in production
+- what the docs bury
+- what seniors check first
+- short Python that proves the point
+
+Return ONLY this JSON shape (no markdown):
+{{
+  "title": "curiosity title under 55 chars (sound like a secret, not a course module)",
+  "subtitle": "one concrete promise of what they will learn to do",
+  "hook": "1 line that makes an AI engineer stop scrolling",
+  "slides": [
+    {{
+      "type": "steps|code|method|tips",
+      "heading": "sharp heading under 36 chars",
+      "steps": ["concrete action 1", "action 2", "action 3", "action 4", "action 5"],
+      "code": "2-5 lines real Python or empty string",
+      "hack": "one non-obvious pro tip (the thing seniors know)",
+      "why": "one line mechanistic why it works",
+      "extra": ["bonus coding tip", "second bonus tip"]
+    }}
+  ],
+  "takeaway": "one memorable engineering rule",
+  "hashtags": ["AI", "MachineLearning", "LLM", "Python", "MLOps"]
+}}
+
+HARD RULES:
+1. Exactly 6 slides. Mix: at least 2 code, 2 steps, 1 method, 1 tips.
+2. Each slide has exactly 5 steps. Each step is specific to {topic} — name real concepts (KV cache, logits, tokenizer, CUDA, batch size, rank, alpha, chunk overlap, recall@k, etc.).
+3. At least 3 slides must include non-empty code using real libraries (torch, transformers, numpy, fastapi, sklearn, sentence_transformers, vllm patterns). Use \\n for newlines. No pseudo-code like foo().
+4. Ban these phrases: leverage, delve, landscape, robust solution, in today's world, game-changer, empower, seamless, cutting-edge.
+5. Prefer surprising true details over safe generic advice. Example energy: "Most people tune temperature. The real lever is top_p + presence penalty on long tools calls."
+6. hack must feel like insider knowledge. why must be causal not motivational.
+7. title should make a senior engineer curious (not "Introduction to X").
+8. JSON only. No trailing commentary."""
+
+
 def generate_tutorial_with_groq(topic: str) -> dict | None:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         return None
-    prompt = f"""Create a dense how-to LinkedIn PDF carousel tutorial as JSON.
-
-Topic: {topic}
-Audience: AI/ML practitioners who want actionable methods and code hacks
-
-Return ONLY valid JSON (no markdown fences) with this shape:
-{{
-  "title": "punchy how-to title under 55 chars",
-  "subtitle": "what you will learn in one line",
-  "hook": "scroll-stopping opening line",
-  "slides": [
-    {{
-      "type": "steps|code|method|tips",
-      "heading": "short heading under 36 chars",
-      "steps": ["action 1", "action 2", "action 3", "action 4", "action 5"],
-      "code": "2-5 line python snippet or empty string",
-      "hack": "one practical pro tip",
-      "why": "one line why this works",
-      "extra": ["bonus tip A", "bonus tip B"]
-    }}
-  ],
-  "takeaway": "memorable closing line",
-  "hashtags": ["AI", "MachineLearning", "GenAI", "MLOps", "Python"]
-}}
-
-Rules:
-- Exactly 6 slides
-- Each slide MUST have 4-5 steps (fill the page)
-- At least 2 slides with non-empty code
-- extra: 2 short bonus tips per slide
-- Topic-specific, no fluff, no markdown inside strings
-- code uses \\n for newlines"""
 
     try:
         resp = requests.post(
@@ -190,16 +217,13 @@ Rules:
             json={
                 "model": "llama-3.3-70b-versatile",
                 "messages": [
-                    {
-                        "role": "system",
-                        "content": "You write dense how-to AI/ML carousels with code and steps. JSON only.",
-                    },
-                    {"role": "user", "content": prompt},
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": build_content_prompt(topic)},
                 ],
-                "temperature": 0.65,
-                "max_tokens": 3200,
+                "temperature": 0.75,
+                "max_tokens": 3500,
             },
-            timeout=50,
+            timeout=55,
         )
         if resp.status_code != 200:
             print("Groq error:", resp.status_code, resp.text[:300])
@@ -212,6 +236,9 @@ Rules:
         data = json.loads(raw)
         if not data.get("slides") or not data.get("title"):
             return None
+        # light sanitize hashtags
+        tags = data.get("hashtags") or []
+        data["hashtags"] = [t.lstrip("#") for t in tags][:10]
         print("Generated tutorial content with Groq")
         return data
     except Exception as e:
@@ -221,105 +248,105 @@ Rules:
 
 def fallback_tutorial(topic: str) -> dict:
     return {
-        "title": f"How to ship {topic[:40]}",
-        "subtitle": "Steps, code hacks, and methods you can use today.",
-        "hook": f"Skip the theory dump. Here is a practical how-to for {topic}.",
+        "title": f"What seniors know about {topic[:35]}",
+        "subtitle": "Coding-side details that never make the intro blogs.",
+        "hook": f"Most tutorials on {topic} skip the part that breaks in production.",
         "slides": [
             {
                 "type": "steps",
-                "heading": "Do this first",
+                "heading": "Measure before you tune",
                 "steps": [
-                    "Define the success metric before any model work",
-                    "Collect a small labeled slice you can evaluate by hand",
-                    "Run a dead-simple baseline and log the score",
-                    "Write down known failure cases up front",
-                    "Only then add complexity if the metric demands it",
+                    "Log tokens/sec and peak VRAM on a fixed batch",
+                    "Record p50 and p95 latency not just mean",
+                    "Freeze a 50-example golden set before any change",
+                    "Diff outputs when you change one hyperparameter",
+                    "Refuse to ship if you cannot reproduce the metric",
                 ],
-                "code": "",
-                "hack": "If you cannot measure it in 10 minutes, the metric is wrong.",
-                "why": "Baselines stop you from celebrating noise.",
-                "extra": ["Keep a living scoreboard in the repo README", "Revisit the metric when users change"],
+                "code": "import time, torch\nt0=time.time(); out=model.generate(**batch)\nprint('tok/s', new_tokens/(time.time()-t0))\nprint('vram', torch.cuda.max_memory_allocated()/1e9)",
+                "hack": "Optimize the slow percentile, not the happy-path mean.",
+                "why": "Users feel p95; dashboards often show the mean.",
+                "extra": ["Pin CUDA and library versions in a lockfile", "Save generate() kwargs next to the metric"],
             },
             {
                 "type": "code",
-                "heading": "Minimal eval loop",
+                "heading": "See the logits",
                 "steps": [
-                    "Load predictions and labels from one file",
-                    "Compute one primary metric only",
-                    "Print failures, not only averages",
-                    "Save a CSV of the worst 20 cases",
-                    "Block merge if metric drops vs baseline",
+                    "Take the last-step logits before sampling",
+                    "Apply temperature then top_p in that order",
+                    "Print top-10 tokens when output looks weird",
+                    "Compare greedy vs sampled on the same prompt",
+                    "Watch for repeated n-grams as a collapse signal",
                 ],
-                "code": "from sklearn.metrics import f1_score\ny_true, y_pred = labels, preds\nprint('f1', f1_score(y_true, y_pred, average='macro'))\n# also print 5 misclassified samples",
-                "hack": "Always print 5 failure cases next to the metric.",
-                "why": "Averages hide the bugs users will feel.",
-                "extra": ["Track metric by slice (lang, length, class)", "Fail CI on silent metric regression"],
+                "code": "logits = outputs.logits[0, -1]\nprobs = torch.softmax(logits/temp, dim=-1)\ntopv, topi = torch.topk(probs, 10)\nprint(list(zip(tokenizer.convert_ids_to_tokens(topi), topv.tolist())))",
+                "hack": "When quality dies, inspect tokens — not only the string.",
+                "why": "String-level bugs often start as probability mass on the wrong ids.",
+                "extra": ["Log eos probability on long generations", "Unit-test your sampling function in isolation"],
             },
             {
                 "type": "method",
-                "heading": "Production method",
+                "heading": "Ship a thin path first",
                 "steps": [
-                    "Wrap inference behind a versioned API",
-                    "Log input hash, model version, latency",
-                    "Add a kill switch / rollback path",
-                    "Alert on metric drift weekly",
-                    "Document the on-call owner in the README",
+                    "Expose one /infer endpoint with a version header",
+                    "Validate input length and reject over-limit early",
+                    "Stream tokens; parse partial JSON carefully",
+                    "Cache identical prefix embeddings or KV when safe",
+                    "Add a hard timeout and a fallback response",
                 ],
                 "code": "",
-                "hack": "Ship behind a feature flag on day one.",
-                "why": "Most ML incidents are deploy incidents.",
-                "extra": ["Canary 5% traffic before full rollout", "Keep last-good model artifact pinned"],
+                "hack": "Version the prompt template like you version the model weights.",
+                "why": "Prompt drift is a silent model change.",
+                "extra": ["Store prompt hash in every log line", "Canary new prompts on 5% traffic"],
             },
             {
                 "type": "code",
-                "heading": "HF quickstart hack",
+                "heading": "Eval that catches lies",
                 "steps": [
-                    "Pin model revision for reproducibility",
-                    "Use pipeline for the first prototype",
-                    "Batch inputs when latency becomes an issue",
-                    "Cache tokenizer outputs where possible",
-                    "Move hot paths to a dedicated inference service",
+                    "Build a slice table: easy, hard, adversarial",
+                    "Score with task metrics not vibes",
+                    "Keep a regression gate in CI",
+                    "Track cost: tokens in + tokens out per win",
+                    "Review 20 failures by hand every week",
                 ],
-                "code": "from transformers import pipeline\nclf = pipeline('text-classification', model='model-id', revision='main')\nprint(clf('example input')[0])",
-                "hack": "Pin revision= so deploys are reproducible.",
-                "why": "Silent model updates break prod quietly.",
-                "extra": ["Store model id + revision in config", "Smoke-test the pipeline in CI"],
+                "code": "from sklearn.metrics import f1_score\nprint('macro_f1', f1_score(y_true, y_pred, average='macro'))\nfor i in fail_idx[:5]:\n    print(texts[i], '->', y_pred[i], 'gold', y_true[i])",
+                "hack": "Averages without failure cases are theater.",
+                "why": "Models fail on clusters; means hide the cluster.",
+                "extra": ["Version the eval set in git-lfs or a data registry", "Block merges on silent metric drops"],
             },
             {
                 "type": "tips",
-                "heading": "Hacks that save time",
+                "heading": "VRAM and speed truths",
                 "steps": [
-                    "Cache embeddings; recompute only deltas",
-                    "Prefer smaller models until quality plateaus",
-                    "Write the eval set before the training script",
-                    "Document known failure modes in the README",
-                    "Time-box experiments to one clear question",
+                    "Batch size is often limited by activation memory",
+                    "Gradient checkpointing trades compute for memory",
+                    "bf16 is safer than fp16 for many LLM trains",
+                    "Compile or fuse kernels only after correctness",
+                    "Profile with a real sequence length distribution",
                 ],
                 "code": "",
-                "hack": "One golden test case > ten vague unit tests.",
-                "why": "Speed comes from fewer surprises, not more GPUs.",
-                "extra": ["Delete unused notebooks monthly", "Name experiments by hypothesis, not date"],
+                "hack": "Your bottleneck is usually memory bandwidth, not FLOPs.",
+                "why": "Attention is memory-bound on modern GPUs for long context.",
+                "extra": ["Print torch.cuda.memory_summary after a step", "Never trust notebook timings for prod SLOs"],
             },
             {
                 "type": "steps",
-                "heading": "Ship checklist",
+                "heading": "Production checklist",
                 "steps": [
-                    "Metric + baseline recorded",
-                    "Latency budget measured on real hardware",
-                    "Logging and rollback ready",
-                    "Owner named for the first week on-call",
-                    "User-facing failure message defined",
+                    "Pin model id + revision + tokenizer",
+                    "Log request id, latency, token counts",
+                    "Define rollback to last-good artifact",
+                    "Set max tokens and cost budgets",
+                    "Name an owner for the first week",
                 ],
                 "code": "",
-                "hack": "No owner = no production system.",
-                "why": "Process is part of the model.",
-                "extra": ["Screenshot the first successful prod call", "Schedule a 7-day post-ship review"],
+                "hack": "If nobody owns the metric, the model is a demo.",
+                "why": "Production is a process wrapped around weights.",
+                "extra": ["Smoke-test generate on deploy", "Alert on sudden length or refusal spikes"],
             },
         ],
-        "takeaway": "Methods beat motivation. Measure, baseline, ship small, iterate.",
+        "takeaway": "Measure tokens, inspect logits, version prompts, ship behind metrics.",
         "hashtags": [
-            "AI", "MachineLearning", "GenAI", "MLOps", "LLM",
-            "Python", "HuggingFace", "DataScience",
+            "AI", "MachineLearning", "LLM", "Python", "MLOps",
+            "DeepLearning", "GenAI", "Engineering",
         ],
     }
 
@@ -473,7 +500,6 @@ def _draw_cover(c: canvas.Canvas, width: float, height: float, content: dict, da
         c.drawString(40, y, line)
         y -= 16
 
-    # Fill lower half with "What you get" cards — kills empty navy space
     y -= 16
     cards = [
         ("01", "Steps", "Clear actions you can run today"),
@@ -526,7 +552,6 @@ def _draw_content_page(
     total: int,
     day_number: int,
 ) -> None:
-    """Flow layout: pack everything from the top — no floating empty middle."""
     c.setFillColor(LIGHT_BG)
     c.rect(0, 0, width, height, fill=1, stroke=0)
     _draw_header_footer(c, width, height, day_number, f"{index}/{total}")
@@ -536,7 +561,6 @@ def _draw_content_page(
     bottom = 32
     usable_h = top - bottom - 6
 
-    # White panel fills full usable area
     c.setFillColor(CARD_BG)
     c.roundRect(margin, bottom, width - 2 * margin, usable_h, 6, fill=1, stroke=0)
 
@@ -545,7 +569,6 @@ def _draw_content_page(
     c.setFillColor(accent)
     c.rect(margin, bottom, 5, usable_h, fill=1, stroke=0)
 
-    # Header row
     c.setFillColor(accent)
     c.circle(margin + 22, top - 20, 11, fill=1, stroke=0)
     c.setFillColor(white)
@@ -568,7 +591,6 @@ def _draw_content_page(
     hack = (slide.get("hack") or "").strip()
     why = (slide.get("why") or slide.get("insight") or "").strip()
 
-    # Pre-measure approximate heights so we can size step rows to fill space
     n_steps = max(len(steps), 1)
     code_lines = [ln for ln in code.replace("\\n", "\n").split("\n") if ln.strip()][:5] if code else []
     code_h = (18 + 8 + 12 * len(code_lines)) if code_lines else 0
@@ -612,7 +634,6 @@ def _draw_content_page(
             ty -= 12
         y -= eh + 3
 
-    # HACK / WHY directly under content (not pinned to bottom)
     if hack or why:
         c.setFillColor(HexColor("#EEF2FF"))
         strip_h = 32 if (hack and why) else 18
@@ -647,7 +668,7 @@ def _draw_closing(c: canvas.Canvas, width: float, height: float, content: dict, 
     c.setFont("Helvetica-Bold", 11)
     c.drawString(32, height - 50, "KEY TAKEAWAY")
 
-    takeaway = content.get("takeaway") or "Methods beat motivation."
+    takeaway = content.get("takeaway") or "Measure tokens, inspect logits, version prompts."
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 16)
     y = height - 80
@@ -657,14 +678,13 @@ def _draw_closing(c: canvas.Canvas, width: float, height: float, content: dict, 
 
     y -= 8
     checks = [
-        "Measure before you model",
-        "Baseline before you scale",
-        "Log before you celebrate",
-        "Rollback before you ship",
-        "Name an owner before go-live",
-        "Review after 7 days in prod",
+        "Measure tokens and VRAM first",
+        "Inspect logits when output breaks",
+        "Version prompts like model weights",
+        "Gate merges on real eval slices",
+        "Pin model id + revision",
+        "Own the metric for 7 days post-ship",
     ]
-    # 2-column checklist fills space
     col_w = (width - 64 - 12) / 2
     for i, item in enumerate(checks):
         col = i % 2
@@ -817,11 +837,11 @@ def build_caption(content: dict, day_number: int) -> str:
     tags = " ".join(f"#{t.lstrip('#')}" for t in (content.get("hashtags") or [])[:8])
     return f"""{content.get('hook') or content['title']}
 
-Day {day_number} of {SERIES_TOTAL} — step-by-step methods, code hacks, and practical how-tos.
+Day {day_number} of {SERIES_TOTAL} — coding-side AI details most tutorials skip.
 
 {content['title']}
 
-Swipe through and save.
+Swipe for steps, real Python, and production hacks.
 
 {tags} {BRAND_TAG}""".strip()
 
