@@ -3,6 +3,7 @@
     "ComposioHQ/awesome-claude-skills",
     "alibaba/open-code-review",
     "calesthio/OpenMontage",
+    "community-scripts/ProxmoxVE",
     "electric-sql/pglite",
     "firecrawl/pdf-inspector",
     "gofr-dev/gofr",
@@ -12,5 +13,5 @@
     "stanford-oval/storm",
     "x1xhlol/system-prompts-and-models-of-ai-tools"
   ],
-  "updated_at": "2026-09-03T10:36:29.650883Z"
+  "updated_at": "2026-09-05T09:53:47.151975Z"
 }
