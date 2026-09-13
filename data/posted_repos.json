@@ -9,6 +9,7 @@
     "electric-sql/pglite",
     "firecrawl/pdf-inspector",
     "gofr-dev/gofr",
+    "headroomlabs-ai/headroom",
     "microsoft/markitdown",
     "permissionlesstech/bitchat",
     "simstudioai/sim",
@@ -16,5 +17,5 @@
     "valkey-io/valkey",
     "x1xhlol/system-prompts-and-models-of-ai-tools"
   ],
-  "updated_at": "2026-09-11T10:31:43.905640Z"
+  "updated_at": "2026-09-13T11:01:04.102177Z"
 }
