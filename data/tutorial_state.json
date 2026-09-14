@@ -1,10 +1,11 @@
 {
-  "last_posted_at": "2026-09-07T11:30:57.592326+00:00",
+  "last_posted_at": "2026-09-14T11:43:39.973502+00:00",
   "posted_topics": [
     "Tokenization tricks models hide from you",
     "Vision transformer patch size hacks",
-    "Gradient checkpointing and VRAM math"
+    "Gradient checkpointing and VRAM math",
+    "Tool calling JSON schema failure modes"
   ],
-  "last_topic": "Gradient checkpointing and VRAM math",
-  "day_number": 3
+  "last_topic": "Tool calling JSON schema failure modes",
+  "day_number": 4
 }
