@@ -9,6 +9,7 @@
     "community-scripts/ProxmoxVE",
     "electric-sql/pglite",
     "firecrawl/pdf-inspector",
+    "fosrl/pangolin",
     "gofr-dev/gofr",
     "headroomlabs-ai/headroom",
     "microsoft/markitdown",
@@ -18,5 +19,5 @@
     "valkey-io/valkey",
     "x1xhlol/system-prompts-and-models-of-ai-tools"
   ],
-  "updated_at": "2026-09-15T10:58:24.970603Z"
+  "updated_at": "2026-09-17T10:53:22.646204Z"
 }
