@@ -1,11 +1,12 @@
 {
-  "last_posted_at": "2026-09-14T11:43:39.973502+00:00",
+  "last_posted_at": "2026-09-21T11:55:57.023771+00:00",
   "posted_topics": [
     "Tokenization tricks models hide from you",
     "Vision transformer patch size hacks",
     "Gradient checkpointing and VRAM math",
-    "Tool calling JSON schema failure modes"
+    "Tool calling JSON schema failure modes",
+    "Prompt caching and prefix reuse in APIs"
   ],
-  "last_topic": "Tool calling JSON schema failure modes",
-  "day_number": 4
+  "last_topic": "Prompt caching and prefix reuse in APIs",
+  "day_number": 5
 }
