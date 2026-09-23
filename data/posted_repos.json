@@ -14,6 +14,7 @@
     "fosrl/pangolin",
     "gofr-dev/gofr",
     "headroomlabs-ai/headroom",
+    "henrygd/beszel",
     "microsoft/markitdown",
     "permissionlesstech/bitchat",
     "simstudioai/sim",
@@ -21,5 +22,5 @@
     "valkey-io/valkey",
     "x1xhlol/system-prompts-and-models-of-ai-tools"
   ],
-  "updated_at": "2026-09-21T11:52:19.725095Z"
+  "updated_at": "2026-09-23T10:41:32.731109Z"
 }
