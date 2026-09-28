@@ -1,12 +1,13 @@
 {
-  "last_posted_at": "2026-09-21T11:55:57.023771+00:00",
+  "last_posted_at": "2026-09-28T12:50:46.047779+00:00",
   "posted_topics": [
     "Tokenization tricks models hide from you",
     "Vision transformer patch size hacks",
     "Gradient checkpointing and VRAM math",
     "Tool calling JSON schema failure modes",
-    "Prompt caching and prefix reuse in APIs"
+    "Prompt caching and prefix reuse in APIs",
+    "Cost control tokens per request budgets"
   ],
-  "last_topic": "Prompt caching and prefix reuse in APIs",
-  "day_number": 5
+  "last_topic": "Cost control tokens per request budgets",
+  "day_number": 6
 }
