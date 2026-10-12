@@ -1,5 +1,5 @@
 {
-  "last_posted_at": "2026-10-05T13:32:18.425401+00:00",
+  "last_posted_at": "2026-10-12T14:21:38.546934+00:00",
   "posted_topics": [
     "Tokenization tricks models hide from you",
     "Vision transformer patch size hacks",
@@ -7,8 +7,9 @@
     "Tool calling JSON schema failure modes",
     "Prompt caching and prefix reuse in APIs",
     "Cost control tokens per request budgets",
-    "Vector DB HNSW vs IVF when to switch"
+    "Vector DB HNSW vs IVF when to switch",
+    "Guardrails that fail under adversarial prompts"
   ],
-  "last_topic": "Vector DB HNSW vs IVF when to switch",
-  "day_number": 7
+  "last_topic": "Guardrails that fail under adversarial prompts",
+  "day_number": 8
 }
